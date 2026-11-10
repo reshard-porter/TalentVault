@@ -109,3 +109,26 @@ def test_interrupted_run_resumes_without_duplicates(portal_url, tmp_path):
     assert len(rows) == len(expected())
     assert len({r["Candidate ID"] for r in rows}) == len(rows)
     assert not (tmp_path / ".state" / "checkpoint.json").exists()   # cleared after a clean finish
+
+
+def test_every_portal_page_and_link_works():
+    """Crawl the portal while signed in: every internal link must load, and no link may be a dead '#'."""
+    import re
+    client = create_app().test_client()
+    client.post("/login", data={"username": "demo", "password": "demo123"})
+    queue, seen = ["/candidates", "/jobs", "/reports", "/settings", "/jobs/new"], set()
+    while queue:
+        url = queue.pop()
+        if url in seen or "/logout" in url:
+            continue
+        seen.add(url)
+        resp = client.get(url)
+        assert resp.status_code == 200, url
+        if resp.mimetype == "text/html":
+            html = resp.get_data(as_text=True)
+            assert 'href="#"' not in html, url
+            queue += [h.replace("&amp;", "&") for h in re.findall(r'href="(/[^"]*)"', html)]
+    assert len(seen) > 50
+    resp = client.post("/settings", data={"full_name": "Test User", "email": "t@example.com", "page_size": "10"},
+                       follow_redirects=True)
+    assert b"Settings saved" in resp.data and b"Test User" in resp.data

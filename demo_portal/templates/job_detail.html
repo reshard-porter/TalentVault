@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }}{% endblock %}
+{% block heading %}<div class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> / {{ job.title }}</div>{% endblock %}
+{% block content %}
+<div class="card panel" style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center">
+  <div>
+    <h1 style="margin:0;font-size:26px">{{ job.title }}</h1>
+    <div class="meta sub" style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+      <span>🏢 {{ job.department }}</span><span>📍 {{ job.location }}</span><span>🕒 {{ job.type }}</span><span>💰 {{ job.salary }}</span><span>Posted {{ job.posted }}</span>
+    </div>
+  </div>
+  <form method="post" action="{{ url_for('job_status', slug=job.slug) }}" style="display:flex;gap:10px;align-items:center">
+    <span class="badge status-{{ job.status|lower|replace(' ','-') }}">{{ job.status }}</span>
+    <select name="status" style="width:auto">
+      {% for s in statuses %}<option {% if s==job.status %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+    <button class="btn ghost" type="submit">Update status</button>
+  </form>
+</div>
+
+<div class="grid2">
+  <div class="card panel">
+    <h3>About the role</h3>
+    <p class="sub" style="font-size:15px;margin-top:0">{{ job.description }}</p>
+    <h3 style="margin-top:24px">Required skills</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">{% for s in job.skills %}<span class="badge">{{ s }}</span>{% endfor %}</div>
+  </div>
+  <div class="card" style="overflow:hidden">
+    <div class="table-head"><h2>Matched candidates</h2>
+      <a href="{{ url_for('candidates', title=job.title) }}" class="sub">View in Candidates ›</a></div>
+    {% if job.applicants %}
+    <table>
+      {% for c in job.applicants %}
+      <tr class="candidate-row"><td><div class="person">
+        <img class="avatar" src="{{ url_for('avatar', cid=c.id) }}" alt="">
+        <div><a href="{{ url_for('profile', cid=c.id) }}">{{ c.first_name|trim }} {{ c.last_name }}</a><div class="sub">{{ c.location }}</div></div>
+      </div></td>
+      <td style="text-align:right">{% if c.resume %}<span class="badge ok">Resume</span>{% else %}<span class="badge warn">No resume</span>{% endif %}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}<div class="empty">No candidates match this role yet.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

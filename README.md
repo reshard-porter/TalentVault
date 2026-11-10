@@ -16,9 +16,21 @@ A demo recruiting portal with fictional candidates is included, so you can see t
 |---|---|
 | ![Candidate list](docs/screenshots/candidates.png) | ![Candidate profile](docs/screenshots/profile.png) |
 
+| Jobs | Reports |
+|---|---|
+| ![Jobs](docs/screenshots/jobs.png) | ![Reports](docs/screenshots/reports.png) |
+
 | Sign in | Exported resume (PDF) |
 |---|---|
 | ![Login page](docs/screenshots/login.png) | ![Resume](docs/screenshots/resume.png) |
+
+The demo portal is fully clickable:
+- **Candidates:** search, filter, and open profiles with a resume preview.
+- **Jobs:** filter by status, post a new job, view matched candidates, and change a job's status.
+- **Reports:** charts by title, location, and resume format, plus a CSV download.
+- **Settings:** your profile, notifications, and page size. Changes apply right away.
+
+Portal data is kept in memory, so restarting the portal resets it.
 
 ## What it does
 
@@ -102,6 +114,7 @@ These are end-to-end tests that drive a real headless browser against the demo p
 - A clear error on a wrong password
 - Formula-safe cells
 - Resuming an interrupted run without duplicates
+- Every portal page and link loading, with no dead links
 
 ## Project map
 
@@ -115,6 +128,6 @@ These are end-to-end tests that drive a real headless browser against the demo p
 | `exporter/state.py` | Checkpoint for resuming interrupted runs |
 | `demo_portal/` | Fictional login-protected candidate portal ("TalentVault") for demos and tests |
 | `demo_portal/resumes.py` | Designed two-column resumes (PDF and Word) with illustrated portraits |
-| `demo_portal/templates/` | Portal pages: sign-in, candidate search, profile with resume preview |
+| `demo_portal/templates/` | Portal pages: sign-in, candidates, profiles, jobs, reports, settings |
 
 Word→PDF conversion uses LibreOffice when it's installed (best fidelity). Without it, `.docx` files fall back to a text-only PDF.

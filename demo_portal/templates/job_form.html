@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Post a job{% endblock %}
+{% block heading %}<div class="crumbs"><a href="{{ url_for('jobs') }}">Jobs</a> / New job</div><h1>Post a job</h1>{% endblock %}
+{% block content %}
+<form method="post" class="card panel" style="max-width:820px">
+  <div class="form-grid">
+    <div><label for="title">Job title *</label><input id="title" name="title" required value="{{ form.title }}" placeholder="e.g. Data Analyst"></div>
+    <div><label for="department">Department *</label><input id="department" name="department" required value="{{ form.department }}" placeholder="e.g. Finance"></div>
+    <div><label for="location">Location</label>
+      <select id="location" name="location">{% for loc in locations %}<option {% if loc==form.location %}selected{% endif %}>{{ loc }}</option>{% endfor %}</select></div>
+    <div><label for="type">Employment type</label>
+      <select id="type" name="type">{% for t in types %}<option {% if t==form.type %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div><label for="salary">Salary range</label><input id="salary" name="salary" value="{{ form.salary }}" placeholder="e.g. $55k – $70k"></div>
+    <div><label for="status">Status</label>
+      <select id="status" name="status">{% for s in statuses %}<option {% if s==form.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  </div>
+  <div style="margin-top:16px"><label for="description" style="display:block;font-weight:600;font-size:14px;margin-bottom:6px">Description</label>
+    <textarea id="description" name="description" placeholder="What will this person do?">{{ form.description }}</textarea></div>
+  <div style="display:flex;gap:10px;margin-top:20px">
+    <button class="btn" type="submit">Publish job</button>
+    <a class="btn ghost" href="{{ url_for('jobs') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

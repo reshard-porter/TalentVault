@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block heading %}<h1>Settings</h1><p>Manage your profile, notifications and preferences.</p>{% endblock %}
+{% block content %}
+<form method="post" id="settings-form">
+  <div class="card panel">
+    <h3>Profile</h3>
+    <div class="form-grid">
+      <div><label for="full_name">Full name</label><input id="full_name" name="full_name" required value="{{ settings.full_name }}"></div>
+      <div><label for="email">Work email</label><input id="email" name="email" type="email" required value="{{ settings.email }}"></div>
+      <div><label for="role">Role</label><input id="role" name="role" value="{{ settings.role }}"></div>
+      <div><label for="company">Company</label><input id="company" name="company" value="{{ settings.company }}"></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="grid-template-columns:1fr 1fr">
+    <div class="card panel">
+      <h3>Notifications</h3>
+      {% for key, label, hint in notification_options %}
+      <label class="toggle"><span><strong>{{ label }}</strong><div class="sub">{{ hint }}</div></span>
+        <input type="checkbox" name="{{ key }}" {% if settings[key] %}checked{% endif %}></label>
+      {% endfor %}
+    </div>
+    <div class="card panel">
+      <h3>Preferences</h3>
+      <div class="stack-form" style="display:flex;flex-direction:column;gap:16px">
+        <div><label for="page_size">Candidates per page</label>
+          <select id="page_size" name="page_size">{% for n in [10, 20, 50] %}<option value="{{ n }}" {% if n==settings.page_size %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></div>
+        <div><label for="timezone">Time zone</label>
+          <select id="timezone" name="timezone">{% for tz in timezones %}<option {% if tz==settings.timezone %}selected{% endif %}>{{ tz }}</option>{% endfor %}</select></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-top:20px">
+    <button class="btn" type="submit" id="save-settings">Save changes</button>
+    <a class="btn ghost" href="{{ url_for('settings') }}">Discard</a>
+  </div>
+</form>
+{% endblock %}

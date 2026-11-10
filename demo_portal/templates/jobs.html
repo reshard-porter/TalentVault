@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+{% block heading %}<h1>Jobs</h1><p>Open roles and the candidates matched to each one.</p>{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div class="tabs">
+    {% for key, label in [('all','All'),('Open','Open'),('Interviewing','Interviewing'),('On hold','On hold')] %}
+      <a href="{{ url_for('jobs', status=key) }}" class="{{ 'on' if status==key }}">{{ label }} ({{ counts[key] }})</a>
+    {% endfor %}
+  </div>
+  <a class="btn" href="{{ url_for('new_job') }}" id="new-job">+ Post a job</a>
+</div>
+
+{% if jobs %}
+<div class="jobs-grid">
+  {% for job in jobs %}
+  <div class="card job">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <h3><a href="{{ url_for('job_detail', slug=job.slug) }}" style="color:inherit">{{ job.title }}</a></h3>
+      <span class="badge status-{{ job.status|lower|replace(' ','-') }}">{{ job.status }}</span>
+    </div>
+    <div class="meta"><span>🏢 {{ job.department }}</span><span>📍 {{ job.location }}</span><span>🕒 {{ job.type }}</span></div>
+    <div class="sub">{{ job.salary }} · Posted {{ job.posted }}</div>
+    <div class="foot">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="stack">{% for c in job.applicants[:4] %}<img src="{{ url_for('avatar', cid=c.id) }}" alt="">{% endfor %}</div>
+        <span class="sub">{{ job.applicants|length }} candidate{{ '' if job.applicants|length == 1 else 's' }}</span>
+      </div>
+      <a class="btn ghost" href="{{ url_for('job_detail', slug=job.slug) }}">View</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">No jobs with this status.</div>
+{% endif %}
+{% endblock %}
