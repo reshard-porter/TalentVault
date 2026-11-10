@@ -1,0 +1,24 @@
+19:25:13  INFO    Site: demo_portal (http://127.0.0.1:5055)  Filters: {'job_title': 'Engineer'}
+19:25:14  INFO    Logged in
+19:25:14  INFO    Filtered results: 18
+19:25:14  INFO    Profiles to process: 18
+19:25:14  INFO    [1/18] Maya Kim: saved Kim_Maya_1003.pdf
+19:25:15  INFO    [2/18] Mei Reid: saved Reid_Mei_1005.pdf
+19:25:16  INFO    [3/18] Marcus Thompson: no resume on file
+19:25:16  INFO    [4/18] Daniel Reid: saved Reid_Daniel_1014.pdf
+19:25:17  INFO    [5/18] Priya Bailey: saved Bailey_Priya_1016.pdf
+19:25:18  INFO    [6/18] Jordan Morgan: saved Morgan_Jordan_1017.pdf
+19:25:18  INFO    [7/18] Lena Lindo: saved Lindo_Lena_1018.pdf
+19:25:20  INFO    [8/18] Jordan Campbell: saved Campbell_Jordan_1024.pdf
+19:25:20  INFO    [9/18] Mei O'Neil: saved O_Neil_Mei_1025.pdf
+19:25:21  INFO    [10/18] Lena Clarke: saved Clarke_Lena_1028.pdf
+19:25:22  INFO    [11/18] Ava Brown: saved Brown_Ava_1029.pdf
+19:25:22  INFO    [12/18] Priya Lindo: saved Lindo_Priya_1031.pdf
+19:25:24  INFO    [13/18] Noah Bailey: saved Bailey_Noah_1032.pdf
+19:25:24  INFO    [14/18] Ethan Silva: saved Silva_Ethan_1034.pdf
+19:25:25  INFO    [15/18] Keisha Williams: saved Williams_Keisha_1038.pdf
+19:25:26  INFO    [16/18] Lucas Lindo: saved Lindo_Lucas_1040.pdf
+19:25:26  INFO    [17/18] Chloe Bailey: saved Bailey_Chloe_1042.pdf
+19:25:27  INFO    [18/18] Chloe Bailey: no resume on file
+19:25:27  INFO    Done. 18 contacts -> output/Excel Data/candidates_2026-11-09_192513.xlsx
+19:25:27  INFO    16 resumes -> output/PDF  (2 without a resume, 0 duplicates skipped, 0 failed)

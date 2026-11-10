@@ -1,0 +1,23 @@
+# Copy this file to config.yaml and adjust it. No code changes are needed for day-to-day use.
+
+site:
+  adapter: demo_portal                 # which site adapter to use (see exporter/sites/)
+  base_url: http://127.0.0.1:5055
+  username_env: PORTAL_USERNAME        # login is read from these environment variables
+  password_env: PORTAL_PASSWORD        # (or you'll be prompted), never stored in this file
+
+filters:                               # leave a value blank to skip that filter
+  job_title: Engineer
+  location: ""
+
+output:
+  dir: output
+  excel_folder: Excel Data
+  pdf_folder: PDF
+
+run:
+  headless: true                       # false = watch the browser
+  max_records: 0                       # 0 = everything matching the filters
+  delay_seconds: 0.5                   # pause between profiles, to be gentle on the site
+  retries: 3
+  timeout_seconds: 30
