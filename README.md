@@ -1,4 +1,4 @@
-# Candidate Export Tool
+# TalentVault: Candidate Export Tool
 
 A Python script that logs into a candidate database, applies your search filters, and produces two folders:
 
