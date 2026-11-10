@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Candidates{% endblock %}
+{% block heading %}<h1>Candidates</h1><p>Search your talent pool and open any profile.</p>{% endblock %}
+{% block content %}
+<div class="stats">
+  <div class="card stat"><div class="label">Total candidates</div><div class="value">{{ stats.total }}</div><div class="hint">▲ 12% this month</div></div>
+  <div class="card stat"><div class="label">Resumes on file</div><div class="value">{{ stats.resumes }}</div><div class="sub">{{ stats.resume_pct }}% of profiles</div></div>
+  <div class="card stat"><div class="label">Locations</div><div class="value">{{ stats.locations }}</div><div class="sub">incl. remote</div></div>
+  <div class="card stat"><div class="label">Matching search</div><div class="value">{{ total }}</div><div class="sub">current filters</div></div>
+</div>
+
+<form method="get" id="filters" class="card filters">
+  <div class="field">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="filter-title" name="title" placeholder="Search by job title, e.g. Engineer" value="{{ request.args.get('title','') }}">
+  </div>
+  <div class="field" style="max-width:240px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    <select id="filter-location" name="location">
+      <option value="">Any location</option>
+      {% for loc in locations %}<option {% if loc==request.args.get('location') %}selected{% endif %}>{{ loc }}</option>{% endfor %}
+    </select>
+  </div>
+  <button type="submit" id="apply-filters" class="btn">Search</button>
+  {% if request.args.get('title') or request.args.get('location') %}<a class="btn ghost" href="{{ url_for('candidates') }}">Clear</a>{% endif %}
+</form>
+
+<div class="card table-card">
+  <div class="table-head"><h2>Results</h2><span class="count" id="result-count">{{ total }} candidates</span></div>
+  {% if rows %}
+  <table>
+    <thead><tr><th>Candidate</th><th>Job title</th><th class="hide-sm">Location</th><th class="hide-sm">Resume</th></tr></thead>
+    <tbody>
+    {% for c in rows %}
+    <tr class="candidate-row" data-id="{{ c.id }}">
+      <td><div class="person">
+        <img class="avatar" src="{{ url_for('avatar', cid=c.id) }}" alt="" loading="lazy">
+        <div><a class="profile-link" href="{{ url_for('profile', cid=c.id) }}">{{ c.first_name|trim }} {{ c.last_name }}</a>
+        <div class="sub">{{ c.email }}</div></div></div></td>
+      <td><span class="badge">{{ c.job_title|replace('=', '') }}</span></td>
+      <td class="hide-sm">{{ c.location }}</td>
+      <td class="hide-sm">{% if c.resume %}<span class="badge ok">● {{ c.resume|upper }}</span>{% else %}<span class="badge warn">Missing</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<div class="empty">No candidates match these filters.</div>{% endif %}
+  <div class="pager">
+    <span>Page {{ page_no }} of {{ pages }}</span>
+    <div class="links">
+      {% if page_no > 1 %}<a class="btn ghost prev" href="{{ url_for('candidates', title=request.args.get('title',''), location=request.args.get('location',''), page=page_no-1) }}">‹ Previous</a>{% endif %}
+      {% if page_no < pages %}<a class="btn ghost next" href="{{ url_for('candidates', title=request.args.get('title',''), location=request.args.get('location',''), page=page_no+1) }}">Next ›</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

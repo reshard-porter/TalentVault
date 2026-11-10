@@ -13,11 +13,10 @@ import os
 import random
 from functools import wraps
 
-from docx import Document
-from flask import (Flask, abort, redirect, render_template_string, request,
-                   send_file, session, url_for)
-from reportlab.lib.pagesizes import LETTER
-from reportlab.pdfgen import canvas
+from flask import Flask, abort, redirect, render_template, request, send_file, session, url_for
+
+from .content import avatar_png, resume_details
+from .resumes import make_docx, make_pdf
 
 DEMO_USER = "demo"
 DEMO_PASSWORD = "demo123"
@@ -63,18 +62,6 @@ def build_candidates(n: int = 45, seed: int = 7) -> list[dict]:
 CANDIDATES = build_candidates()
 BY_ID = {c["id"]: c for c in CANDIDATES}
 
-LAYOUT = """<!doctype html><html><head><title>TalentVault Demo</title>
-<style>body{font-family:system-ui;margin:2rem;max-width:900px}table{border-collapse:collapse;width:100%}
-td,th{border-bottom:1px solid #ddd;padding:.4rem;text-align:left}.err{color:#b00}</style></head>
-<body><header><strong>TalentVault</strong> (demo data)
-{% if session.get('user') %} · <a href="{{ url_for('logout') }}" id="logout">Log out</a>{% endif %}</header>
-{{ body|safe }}</body></html>"""
-
-
-def page(body: str, **ctx) -> str:
-    return render_template_string(LAYOUT, body=render_template_string(body, **ctx))
-
-
 def login_required(view):
     @wraps(view)
     def wrapper(*args, **kwargs):
@@ -101,10 +88,7 @@ def create_app() -> Flask:
                 session["user"] = DEMO_USER
                 return redirect(request.args.get("next") or url_for("candidates"))
             error = "Invalid username or password."
-        return page("""<h1>Sign in</h1>{% if error %}<p class="err" id="login-error">{{ error }}</p>{% endif %}
-<form method="post"><label>Username <input id="username" name="username"></label>
-<label>Password <input id="password" name="password" type="password"></label>
-<button type="submit" id="login-btn">Sign in</button></form>""", error=error)
+        return render_template("login.html", error=error, faces=[1001, 1004, 1007, 1012, 1016])
 
     @app.route("/logout")
     def logout():
@@ -121,32 +105,26 @@ def create_app() -> Flask:
         page_no = max(1, request.args.get("page", 1, type=int))
         pages = max(1, -(-len(results) // PAGE_SIZE))
         rows = results[(page_no - 1) * PAGE_SIZE: page_no * PAGE_SIZE]
-        return page("""<h1>Candidates</h1>
-<form method="get" id="filters"><input id="filter-title" name="title" placeholder="Job title" value="{{ request.args.get('title','') }}">
-<select id="filter-location" name="location"><option value="">Any location</option>
-{% for loc in locations %}<option {% if loc==request.args.get('location') %}selected{% endif %}>{{ loc }}</option>{% endfor %}</select>
-<button type="submit" id="apply-filters">Search</button></form>
-<p id="result-count">{{ total }} candidates</p>
-<table><tr><th>Name</th><th>Job title</th><th>Location</th></tr>
-{% for c in rows %}<tr class="candidate-row" data-id="{{ c.id }}"><td><a class="profile-link" href="{{ url_for('profile', cid=c.id) }}">{{ c.first_name }} {{ c.last_name }}</a></td>
-<td>{{ c.job_title }}</td><td>{{ c.location }}</td></tr>{% endfor %}</table>
-<p>Page {{ page_no }} of {{ pages }}
-{% if page_no < pages %}<a class="next" href="{{ url_for('candidates', title=request.args.get('title',''), location=request.args.get('location',''), page=page_no+1) }}">Next &rsaquo;</a>{% endif %}</p>""",
-                    rows=rows, total=len(results), page_no=page_no, pages=pages, locations=LOCATIONS)
+        with_resume = sum(1 for c in CANDIDATES if c["resume"])
+        stats = {"total": len(CANDIDATES), "resumes": with_resume,
+                 "resume_pct": round(100 * with_resume / len(CANDIDATES)),
+                 "locations": len({c["location"] for c in CANDIDATES})}
+        return render_template("candidates.html", rows=rows, total=len(results), page_no=page_no,
+                               pages=pages, locations=LOCATIONS, stats=stats, active="candidates")
 
     @app.route("/candidates/<int:cid>")
     @login_required
     def profile(cid: int):
         c = BY_ID.get(cid) or abort(404)
-        return page("""<h1>Candidate profile</h1><dl id="profile" data-id="{{ c.id }}">
-<dt>First name</dt><dd data-field="first_name">{{ c.first_name }}</dd>
-<dt>Last name</dt><dd data-field="last_name">{{ c.last_name }}</dd>
-<dt>Email</dt><dd data-field="email">{{ c.email }}</dd>
-<dt>Phone</dt><dd data-field="phone">{{ c.phone }}</dd>
-<dt>Job title</dt><dd data-field="job_title">{{ c.job_title }}</dd>
-<dt>Location</dt><dd data-field="location">{{ c.location }}</dd></dl>
-{% if c.resume %}<a id="resume-link" href="{{ url_for('resume', cid=c.id) }}">Download resume</a>
-{% else %}<p id="no-resume">No resume on file.</p>{% endif %}""", c=c)
+        return render_template("profile.html", c=c, info=resume_details(c["id"], c["job_title"]),
+                               active="candidates")
+
+    @app.route("/avatars/<int:cid>.png")
+    def avatar(cid: int):
+        c = BY_ID.get(cid) or abort(404)
+        resp = send_file(io.BytesIO(avatar_png(cid, 240, c["first_name"])), mimetype="image/png")
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+        return resp
 
     @app.route("/candidates/<int:cid>/resume")
     @login_required
@@ -156,43 +134,13 @@ def create_app() -> Flask:
             abort(404)
         stem = f"resume_{c['id']}"
         if c["resume"] == "pdf":
+            inline = request.args.get("inline") == "1"
             return send_file(io.BytesIO(make_pdf(c)), mimetype="application/pdf",
-                             as_attachment=True, download_name=f"{stem}.pdf")
+                             as_attachment=not inline, download_name=f"{stem}.pdf")
         return send_file(io.BytesIO(make_docx(c)), as_attachment=True, download_name=f"{stem}.docx",
                          mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
     return app
-
-
-def resume_lines(c: dict) -> list[str]:
-    name = f"{c['first_name'].strip()} {c['last_name']}"
-    return [name, c["job_title"].lstrip("="), f"{c['email']}  |  {c['phone']}  |  {c['location']}", "",
-            "Summary", f"Fictional demo candidate #{c['id']} generated for testing the exporter.", "",
-            "Experience", "- Delivered projects on time across cross-functional teams",
-            "- Improved processes and reporting accuracy"]
-
-
-def make_pdf(c: dict) -> bytes:
-    buf = io.BytesIO()
-    pdf = canvas.Canvas(buf, pagesize=LETTER)
-    y = 740
-    for i, line in enumerate(resume_lines(c)):
-        pdf.setFont("Helvetica-Bold" if i == 0 else "Helvetica", 16 if i == 0 else 11)
-        pdf.drawString(72, y, line)
-        y -= 22 if i == 0 else 16
-    pdf.save()
-    return buf.getvalue()
-
-
-def make_docx(c: dict) -> bytes:
-    doc = Document()
-    lines = resume_lines(c)
-    doc.add_heading(lines[0], level=1)
-    for line in lines[1:]:
-        doc.add_paragraph(line)
-    buf = io.BytesIO()
-    doc.save(buf)
-    return buf.getvalue()
 
 
 if __name__ == "__main__":

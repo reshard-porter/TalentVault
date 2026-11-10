@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ c.first_name|trim }} {{ c.last_name }}{% endblock %}
+{% block heading %}<div class="crumbs"><a href="{{ url_for('candidates') }}">Candidates</a> / {{ c.first_name|trim }} {{ c.last_name }}</div>{% endblock %}
+{% block content %}
+<div class="card profile-hero">
+  <img class="big" src="{{ url_for('avatar', cid=c.id) }}" alt="">
+  <div class="who">
+    <h1>{{ c.first_name|trim }} {{ c.last_name }}</h1>
+    <div class="sub">{{ c.job_title|replace('=', '') }} · {{ c.location }}</div>
+  </div>
+  <div class="actions">
+    <a class="btn ghost" href="mailto:{{ c.email }}">Email</a>
+    {% if c.resume %}<a id="resume-link" class="btn accent" href="{{ url_for('resume', cid=c.id) }}">⬇ Download resume</a>{% endif %}
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="card panel">
+    <h3>Contact details</h3>
+    <dl id="profile" data-id="{{ c.id }}">
+      <dt>First name</dt><dd data-field="first_name">{{ c.first_name }}</dd>
+      <dt>Last name</dt><dd data-field="last_name">{{ c.last_name }}</dd>
+      <dt>Email</dt><dd data-field="email">{{ c.email }}</dd>
+      <dt>Phone</dt><dd data-field="phone">{{ c.phone }}</dd>
+      <dt>Job title</dt><dd data-field="job_title">{{ c.job_title }}</dd>
+      <dt>Location</dt><dd data-field="location">{{ c.location }}</dd>
+    </dl>
+    <h3 style="margin-top:28px">Skills</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">{% for s in info.skills %}<span class="badge">{{ s }}</span>{% endfor %}</div>
+  </div>
+  <div class="card panel">
+    <h3>Resume</h3>
+    {% if c.resume %}
+      <div class="doc-tile">
+        <div class="doc-icon" style="background:{{ '#D92D20' if c.resume=='pdf' else '#2B579A' }}">{{ c.resume|upper }}</div>
+        <div><strong>resume_{{ c.id }}.{{ c.resume }}</strong><div class="sub">Uploaded by candidate</div></div>
+      </div>
+      {% if c.resume == 'pdf' %}
+        <iframe class="preview" src="{{ url_for('resume', cid=c.id, inline=1) }}" title="Resume preview"></iframe>
+      {% else %}
+        <p class="sub">Word documents can't be previewed in the browser. Download the file to view it.</p>
+      {% endif %}
+    {% else %}
+      <p id="no-resume" class="empty">No resume on file.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block page %}
+<div class="login">
+  <section class="brand-side">
+    <div class="logo"><div class="logo-mark">T</div>TalentVault</div>
+    <div>
+      <h2>Find, review and hire the right people faster.</h2>
+      <p>One place for every candidate profile, resume and contact detail your team needs.</p>
+      <div class="faces">
+        {% for cid in faces %}<img src="{{ url_for('avatar', cid=cid) }}" alt="">{% endfor %}
+      </div>
+    </div>
+    <p style="font-size:13px;opacity:.7">© TalentVault demo · fictional data for testing</p>
+  </section>
+  <section class="form-side">
+    <form method="post">
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to your recruiter account.</p>
+      {% if error %}<div class="alert" id="login-error">{{ error }}</div>{% endif %}
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" placeholder="Enter your username">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••">
+      <button type="submit" id="login-btn" class="btn">Sign in</button>
+      <div class="demo-note">Demo login: <strong>demo</strong> / <strong>demo123</strong></div>
+    </form>
+  </section>
+</div>
+{% endblock %}
